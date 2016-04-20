@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Infinite Scroll</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    img {
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Infinite Scroll</h1>
+  </div>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.min.js">
+  <script>
+    $(document).ready(function() {
+  
+    // The max number of images to be loaded at a time.
+    var limit = 10;
+  
+    // JSON data will be assigned to this
+    var images = "";
+  
+    // to remember where in JSON we are
+    // initialize to the value of limit - so that we can load in images
+    // before page scroll.
+    var currentIndex = limit;
+  
+    // When there are fewer than `limit` images left, this
+    // value will be the difference between the current index
+    // and the length of the images array.
+    var stop = limit;
+  
+    // hit up pixabay for images
+    var apiKey = "2430018-6f65c9dad43d336b5ef56ed1c";
+  
+    // Make a GET request to the pixabay api
+    $.getJSON("https://pixabay.com/api/?key=" + apiKey + "&per_page=200", function(data) {
+  
+      // save the data to be used later.
+      images = data.hits;
+  
+    })
+  
+    // create the first round of images.
+    .done(function() {
+      var html = "";
+  
+      for (var i = 0; i < limit; i++) {
+        html += '<img src="' + images[i].webformatURL + '">';
+      }
+  
+      $(".container").append(html)
+    });
+  
+    $(document).scroll(function() {
+  
+      // get the scoll position with support for IE
+      // see http://jsbin.com/egegu3/6/edit?html,js,output
+      // for original code.
+      var totalHeight, currentScroll, visibleHeight;
+      if (document.documentElement.scrollTop) {
+        currentScroll = document.documentElement.scrollTop;
+      } else {
+        currentScroll = document.body.scrollTop;
+      }
+  
+      totalHeight = document.body.offsetHeight;
+      visibleHeight = document.documentElement.clientHeight;
+  
+      // only load more images if the scroll bar is at the bottom
+      if (totalHeight <= currentScroll + visibleHeight) {
+        var diff = images.length - currentIndex;
+  
+        // if the difference is > 0 then there are more images in the array
+        if (diff > 0) {
+          stop = diff > limit ? limit : diff;
+          getImages(currentIndex, stop);
+          currentIndex += stop;
+        }
+  
+        // otherwise, reset the index before calling getImages()
+        else {
+          currentIndex = 0;
+          diff = images.length - currentIndex;
+          stop = diff > limit ? limit : diff;
+          getImages(currentIndex, stop);
+          currentIndex += stop;
+        }
+      }
+    });
+  
+    // gets the path for each image from index to stop
+    function getImages(index, stop) {
+  
+      var html = "";
+  
+      // create the img tags.
+      for (var i = index; i < index + stop; i++) {
+        html += '<img src="' + images[i].webformatURL + '">';
+      }
+  
+      $(".container").append(html);
+    }
+  
+  });
+  </script>
+</body>
+</html>
